@@ -1,5 +1,6 @@
 import gspread
 from google.oauth2.service_account import Credentials
+from pprint import pprint
 
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -17,7 +18,6 @@ def get_sales_data():
     Get sales data input from the user.
     The loop will repeat until it is valid.
     """
-    
     while True:
         print("Please enter sales data from the last market.")
         print("Data should be six numbers, separated by commas.")
@@ -28,14 +28,13 @@ def get_sales_data():
         if validate_data(sales_data):
             print("Data is valid!")
             break
-    
     return sales_data
 
 def validate_data(values):
     """
     Inside the try, converts all values into integers.
     Raises ValueError if string cannot be converted into int,
-    or if there aren't exactly 6 values. 
+    or if there aren't exactly 6 values.
     """
     try:
         [int(value) for value in values]
@@ -58,7 +57,26 @@ def update_sales_worksheet(data):
     sales_worksheet.append_row(data)
     print("Sales worksheet updated successfully!")
 
+def calculate_surplus_data(sales_row):
+    """
+    Compare sales withstock and calculate the surplus for each item.
 
-data = get_sales_data()
-sales_data = [int(value) for value in data]
-update_sales_worksheet(sales_data)
+    The surplus is defined as the sales figure substracted from the stock:
+    - Positive surplus indicates waste
+    - Negative surplus indicates extra made when stock ran out
+    """
+    print("Calculating surplus data...\n")
+    stock = SHEET.worksheet("stock").get_all_values()
+    stock_row = stock[-1]
+    print(stock_row)
+
+def main():
+    """
+    Run all program functions
+    """
+    data = get_sales_data()
+    sales_data = [int(value) for value in data]
+    update_sales_worksheet(sales_data)
+    calculate_surplus_data(sales_data)
+
+main()
